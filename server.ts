@@ -91,14 +91,14 @@ async function startServer() {
   };
 
   // Librarian API
-  app.post("/api/librarian/log", verifyUser, (req, res) => {
+  app.post("/api/librarian/log", verifyUser, (req: express.Request, res: express.Response) => {
     try {
       const { email, status } = req.body;
       const entry = {
         timestamp: new Date().toISOString(),
         email,
         status,
-        ip: req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress
+        ip: req.ip || req.headers["x-forwarded-for"] || (req.socket ? req.socket.remoteAddress : undefined)
       };
       const logLine = `${JSON.stringify(entry)}\n`;
       fs.appendFileSync(LOG_PATH, logLine, "utf8");
@@ -109,7 +109,7 @@ async function startServer() {
     }
   });
 
-  app.get("/api/librarian/logs", verifyAdmin, (req, res) => {
+  app.get("/api/librarian/logs", verifyAdmin, (req: express.Request, res: express.Response) => {
     try {
       if (!fs.existsSync(LOG_PATH)) {
         return res.json([]);
@@ -127,7 +127,7 @@ async function startServer() {
     }
   });
 
-  app.get("/api/librarian/allowed-users", verifyUser, (req, res) => {
+  app.get("/api/librarian/allowed-users", verifyUser, (req: express.Request, res: express.Response) => {
     try {
       if (!fs.existsSync(ALLOWED_USERS_PATH)) {
         return res.json([]);
@@ -140,7 +140,7 @@ async function startServer() {
     }
   });
 
-  app.get("/api/librarian/dne-list", verifyUser, (req, res) => {
+  app.get("/api/librarian/dne-list", verifyUser, (req: express.Request, res: express.Response) => {
     try {
       if (!fs.existsSync(DNE_LIST_PATH)) {
         return res.json([]);
@@ -154,7 +154,7 @@ async function startServer() {
   });
 
   // API Routes
-  app.post("/api/gemini/chat", async (req, res) => {
+  app.post("/api/gemini/chat", async (req: express.Request, res: express.Response) => {
     logDebug("=== CHAT REQUEST RECEIVED ===");
     try {
       const authHeader = req.headers.authorization;
@@ -164,7 +164,7 @@ async function startServer() {
       }
 
       const idToken = authHeader.split("Bearer ")[1];
-      let decodedToken;
+      let decodedToken: any;
       try {
         decodedToken = await getAuth().verifyIdToken(idToken);
         logDebug(`Token decoded for ${decodedToken.email}`);
@@ -219,7 +219,7 @@ Answer the user directly and concisely. Keep the tone minimal unless instructed 
 IMPORTANT CO-CREATION CAPABILITY:
 You can help the user build their vision by suggesting clean text, markdown widgets, HTML elements, or custom execution paths.
 When proposing code modifications, full templates, or structured notes that the user might want to apply directly to their parent notebook, ALWAYS wrap them inside standard markdown code blocks (such as \`\`\`html ... \`\`\` or \`\`\`markdown ... \`\`\`).
-The user has direct, 1-click interface buttons ("Replace Notebook", "Append", "Insert") beneath all your code blocks to instantly integrate your suggestions into their notebook canvas. Encourage them to start fresh on a blank canvas, brainstorm their vision, and output beautiful interactive templates they can test in real-time by switching to the "View" tab!`;
+The user has direct, 1-click interface buttons ("Replace Notebook", "Append", "Insert") beneath all your code blocks to instantly integrate your suggestions into their notebook canvas.`;
 
       const contents = history ? [...history, { role: 'user', parts: [{ text: message }] }] : [{ role: 'user', parts: [{ text: message }] }];
 
@@ -227,7 +227,7 @@ The user has direct, 1-click interface buttons ("Replace Notebook", "Append", "I
       let response;
       try {
         response = await ai.models.generateContentStream({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents,
           config: {
             systemInstruction: systemInstruction,
@@ -300,7 +300,7 @@ The user has direct, 1-click interface buttons ("Replace Notebook", "Append", "I
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', (req: express.Request, res: express.Response) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
