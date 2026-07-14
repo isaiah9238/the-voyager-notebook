@@ -4,12 +4,17 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from
 import firebaseConfig from "../firebase-applet-config.json";
 
 export const app = initializeApp(firebaseConfig);
+
+// Initialize Firestore with robust long-polling to prevent Wi-Fi dropping drops
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true
-}, firebaseConfig.firestoreDatabaseId);
+});
+
 export const auth = getAuth(app);
 
 const provider = new GoogleAuthProvider();
+// Forces Google to prompt for account selection on click
+provider.setCustomParameters({ prompt: 'select_account' });
 
 // Authenticate with Google
 export async function signInWithGoogle() {
@@ -22,6 +27,7 @@ export async function signInWithGoogle() {
   }
 }
 
+// Sign Out configuration matching App.tsx hooks
 export async function signOutUser() {
   try {
     await auth.signOut();
@@ -32,4 +38,3 @@ export async function signOutUser() {
 }
 
 export { onAuthStateChanged };
-
