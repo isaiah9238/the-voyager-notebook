@@ -227,7 +227,7 @@ The user has direct, 1-click interface buttons ("Replace Notebook", "Append", "I
       let response;
       try {
         response = await ai.models.generateContentStream({
-          model: "gemini-2.5-flash",
+          model: "gemini-2.5-flash-lite",
           contents,
           config: {
             systemInstruction: systemInstruction,
