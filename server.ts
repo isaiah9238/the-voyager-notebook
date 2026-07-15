@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import path from "path";
 import fs from "fs";
@@ -223,6 +224,7 @@ The user has direct, 1-click interface buttons ("Replace Notebook", "Append", "I
 
       const contents = history ? [...history, { role: 'user', parts: [{ text: message }] }] : [{ role: 'user', parts: [{ text: message }] }];
 
+      console.log("Current API Key:", process.env.GEMINI_API_KEY);
       logDebug(`Calling Gemini generateContentStream...`);
       let response;
       try {
